@@ -1,80 +1,71 @@
-# Password Reset Configuration for Streamlit Cloud
+# Password Reset - Simplified Approach
 
-## Important: Update Redirect URL
+## How It Works
 
-Before deploying, you need to update the redirect URL in the code to match your Streamlit app URL.
+We're using Supabase's **built-in password reset page** instead of a custom Streamlit page. This is simpler and more reliable.
 
-### Step 1: Update `utils/auth.py`
+## User Flow
 
-Find this line in `send_password_reset()` function:
+1. **User requests reset:**
+   - Goes to login page
+   - Clicks "Forgot Password?"
+   - Enters email
+   - Clicks "Send Reset Link"
 
-```python
-"redirect_to": "https://your-app.streamlit.app/Reset_Password"
-```
+2. **User receives email:**
+   - Email contains reset link
+   - Link goes to Supabase's hosted reset page
 
-Replace `your-app.streamlit.app` with your actual Streamlit Cloud URL.
+3. **User resets password:**
+   - Clicks link in email
+   - Supabase shows password reset form
+   - User enters new password
+   - Supabase confirms reset
 
-**Example:**
-```python
-"redirect_to": "https://panini-dashboard.streamlit.app/Reset_Password"
-```
+4. **User returns to app:**
+   - Can now login with new password
 
-### Step 2: Configure Supabase URL Configuration
+## Why This Approach?
 
-1. Go to Supabase Dashboard → Authentication → URL Configuration
-2. Add your reset password page URL to **Redirect URLs**:
-   - `https://your-app.streamlit.app/Reset_Password`
-   - `https://your-app.streamlit.app/**` (wildcard for all pages)
+**Problem with custom page:**
+- Supabase sends token as hash fragment (`#access_token=...`)
+- Streamlit can't read hash fragments server-side
+- Would require complex JavaScript workarounds
 
-### Step 3: Test the Flow
+**Benefits of Supabase page:**
+- ✅ Works out of the box
+- ✅ No custom code needed
+- ✅ Secure and maintained by Supabase
+- ✅ Mobile-friendly
+- ✅ Handles token expiration automatically
 
-1. **Request Reset:**
-   - Go to login page
-   - Click "Forgot Password?"
-   - Enter email
-   - Click "Send Reset Link"
+## Customization (Optional)
 
-2. **Check Email:**
-   - Open email inbox
-   - Find "Reset Password" email from Supabase
-   - Click the reset link
+You can customize the Supabase reset page:
 
-3. **Reset Password:**
-   - You'll be redirected to `/Reset_Password` page
-   - Enter new password (min 6 characters)
-   - Confirm password
-   - Click "Reset Password"
+1. Go to Supabase Dashboard → Authentication → Email Templates
+2. Click "Reset Password"
+3. Customize the email template
+4. The reset page itself can be styled via Supabase settings
 
-4. **Login:**
-   - Return to home page
-   - Login with new password
+## Testing
 
-## Troubleshooting
-
-### "No reset token found"
-- Check that Supabase redirect URL is configured correctly
-- Verify the link hasn't expired (1 hour limit)
-- Request a new reset link
-
-### "Failed to send reset email"
-- Verify email exists in Supabase
-- Check Supabase email rate limits (3/hour on free tier)
-- Check Supabase logs for errors
-
-### "Error resetting password"
-- Token may have expired
-- Request a new reset link
-- Check browser console for errors
+1. Go to your dashboard login
+2. Click "Forgot Password?"
+3. Enter your email
+4. Check inbox for reset email
+5. Click link → Supabase page opens
+6. Enter new password
+7. Return to dashboard and login
 
 ## Files Modified
 
-1. `pages/9_🔐_Reset_Password.py` - New page to handle reset token
-2. `utils/auth.py` - Added `send_password_reset()` function and forgot password UI
-3. `app.py` - Updated imports
+- `utils/auth.py` - Simplified `send_password_reset()` function
+- Removed `pages/9_🔐_Reset_Password.py` (no longer needed)
 
 ## Next Steps
 
-1. Update redirect URL in `utils/auth.py`
-2. Configure Supabase redirect URLs
-3. Deploy to Streamlit Cloud
-4. Test complete flow
+1. Push changes to GitHub
+2. Streamlit Cloud will redeploy
+3. Test the forgot password flow
+4. Users can now reset passwords easily

@@ -96,6 +96,7 @@ def get_current_user():
 def send_password_reset(email):
     """
     Send password reset email to user.
+    Uses Supabase's default reset page.
     
     Args:
         email: User's email address
@@ -105,13 +106,8 @@ def send_password_reset(email):
     """
     try:
         supabase = get_supabase_client()
-        # Supabase will send reset email with link to your app
-        supabase.auth.reset_password_for_email(
-            email,
-            options={
-                "redirect_to": "https://salbot-app-z6okgwwbpkyd9nufqccdmn.streamlit.app/Reset_Password"
-            }
-        )
+        # Send reset email - Supabase will use their default reset page
+        supabase.auth.reset_password_for_email(email)
         return True
     except Exception as e:
         print(f"Error sending reset email: {e}")
