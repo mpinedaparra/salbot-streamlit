@@ -40,7 +40,7 @@ try:
         selected_stock = st.selectbox("Stock Status", stock_options)
     
     with col3:
-        search_term = st.text_input("🔍 Search products", placeholder="Enter product name...")
+        search_term = st.text_input("🔍 Search products", placeholder="e.g., Patrulla guerra")
     
     # Apply filters
     filtered_df = products_df.copy()
@@ -53,10 +53,19 @@ try:
     elif selected_stock == 'Out of Stock':
         filtered_df = filtered_df[filtered_df['in_stock'] == False]
     
+    # Multi-word search: all words must be present (AND logic)
     if search_term:
-        filtered_df = filtered_df[
-            filtered_df['name'].str.contains(search_term, case=False, na=False)
-        ]
+        # Split search term into words
+        search_words = search_term.lower().split()
+        
+        # Filter: all words must be present in the product name
+        def matches_all_words(name):
+            if pd.isna(name):
+                return False
+            name_lower = name.lower()
+            return all(word in name_lower for word in search_words)
+        
+        filtered_df = filtered_df[filtered_df['name'].apply(matches_all_words)]
     
     # Display results
     st.markdown(f"**Showing {len(filtered_df)} of {len(products_df)} products**")
