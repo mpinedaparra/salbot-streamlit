@@ -49,6 +49,22 @@ def login_form():
                     
             except Exception as e:
                 st.error(f"Login error: {str(e)}")
+    
+    # Forgot password section
+    st.markdown("---")
+    with st.expander("🔐 Forgot Password?"):
+        st.write("Enter your email to receive a password reset link.")
+        reset_email = st.text_input("Email", key="reset_email", placeholder="your@email.com")
+        
+        if st.button("Send Reset Link", use_container_width=True):
+            if not reset_email:
+                st.error("Please enter your email address.")
+            else:
+                if send_password_reset(reset_email):
+                    st.success("✅ Password reset email sent! Check your inbox.")
+                    st.info("The link will expire in 1 hour.")
+                else:
+                    st.error("Failed to send reset email. Please try again.")
 
 def logout():
     """
@@ -76,3 +92,27 @@ def get_current_user():
         User object or None
     """
     return st.session_state.get('user', None)
+
+def send_password_reset(email):
+    """
+    Send password reset email to user.
+    
+    Args:
+        email: User's email address
+        
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        supabase = get_supabase_client()
+        # Supabase will send reset email with link to your app
+        supabase.auth.reset_password_for_email(
+            email,
+            options={
+                "redirect_to": "https://salbot-app-z6okgwwbpkyd9nufqccdmn.streamlit.app/Reset_Password"
+            }
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending reset email: {e}")
+        return False

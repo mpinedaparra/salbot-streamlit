@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import plotly.express as px
-from utils.auth import check_authentication, login_form, logout, get_current_user
+from utils.auth import check_authentication, login_form, logout, get_current_user, send_password_reset
 from utils.supabase_client import get_supabase_client
 from utils.data_fetcher import fetch_all_products
 
