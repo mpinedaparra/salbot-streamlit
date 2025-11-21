@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.express as px
 from utils.auth import check_authentication, login_form, logout, get_current_user
 from utils.supabase_client import get_supabase_client
+from utils.data_fetcher import fetch_all_products
 
 # Load environment variables (for local development)
 load_dotenv()
@@ -47,8 +48,8 @@ st.title("📊 Dashboard Overview")
 
 # Fetch data
 try:
-    response = supabase.table('products').select('*').execute()
-    products_df = pd.DataFrame(response.data)
+    # Fetch all products with pagination
+    products_df = fetch_all_products()
     
     if len(products_df) == 0:
         st.warning("No products found in database.")

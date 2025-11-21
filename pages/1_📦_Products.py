@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 from utils.auth import check_authentication, get_current_user
 from utils.supabase_client import get_supabase_client
+from utils.data_fetcher import fetch_all_products
 
 # Check authentication
 if not check_authentication():
@@ -20,8 +21,8 @@ st.title("📦 Product Catalog")
 
 # Fetch products
 try:
-    response = supabase.table('products').select('*').execute()
-    products_df = pd.DataFrame(response.data)
+    # Fetch all products with pagination
+    products_df = fetch_all_products()
     
     if len(products_df) == 0:
         st.warning("No products found in database.")
