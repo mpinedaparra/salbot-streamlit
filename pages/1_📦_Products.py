@@ -66,10 +66,34 @@ try:
     
     # Add numeric price column for sorting (ignore decimals after comma)
     if 'price' in display_df.columns:
-        display_df['price_numeric'] = display_df['price'].apply(lambda x: 
-            int(str(x).replace('$', '').replace('.', '').replace(',', '').split('.')[0]) 
-            if pd.notna(x) else 0
-        )
+        def parse_price(price_str):
+            """
+            Parse price string to integer, removing formatting and decimals.
+            Examples:
+                $148.900,00 -> 148900
+                $12.990 -> 12990
+                $7.490 -> 7490
+            """
+            if pd.isna(price_str):
+                return 0
+            
+            # Convert to string and remove $
+            price_str = str(price_str).replace('$', '').strip()
+            
+            # Split by comma to remove decimals (,00)
+            if ',' in price_str:
+                price_str = price_str.split(',')[0]
+            
+            # Remove dots (thousands separator)
+            price_str = price_str.replace('.', '')
+            
+            # Convert to int
+            try:
+                return int(price_str)
+            except:
+                return 0
+        
+        display_df['price_numeric'] = display_df['price'].apply(parse_price)
         # Sort by price numeric by default
         display_df = display_df.sort_values('price_numeric', ascending=True)
     
