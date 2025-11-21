@@ -61,31 +61,69 @@ try:
     # Display results
     st.markdown(f"**Showing {len(filtered_df)} of {len(products_df)} products**")
     
-    # Product table
-    display_columns = ['name', 'marketplace', 'price', 'in_stock', 'product_url', 'scraped_at']
-    display_columns = [col for col in display_columns if col in filtered_df.columns]
+    # Prepare data for display
+    display_df = filtered_df.copy()
     
-    # Format the dataframe
-    display_df = filtered_df[display_columns].copy()
-    
-    # Make URLs clickable
-    if 'product_url' in display_df.columns:
-        display_df['product_url'] = display_df['product_url'].apply(
-            lambda x: f'<a href="{x}" target="_blank">View</a>' if pd.notna(x) else ''
+    # Add numeric price column for sorting (ignore decimals after comma)
+    if 'price' in display_df.columns:
+        display_df['price_numeric'] = display_df['price'].apply(lambda x: 
+            int(str(x).replace('$', '').replace('.', '').replace(',', '').split('.')[0]) 
+            if pd.notna(x) else 0
         )
+        # Sort by price numeric by default
+        display_df = display_df.sort_values('price_numeric', ascending=True)
     
-    # Rename columns for better display
+    # Select columns to display
+    display_columns = ['image_url', 'name', 'marketplace', 'price', 'in_stock', 'product_url', 'scraped_at']
+    display_columns = [col for col in display_columns if col in display_df.columns]
+    
+    # Column configuration with proper types
     column_config = {
-        'name': st.column_config.TextColumn('Product Name', width='large'),
-        'marketplace': st.column_config.TextColumn('Marketplace', width='small'),
-        'price': st.column_config.TextColumn('Price', width='small'),
-        'in_stock': st.column_config.CheckboxColumn('In Stock', width='small'),
-        'product_url': st.column_config.LinkColumn('Link', width='small'),
-        'scraped_at': st.column_config.DatetimeColumn('Last Updated', width='medium')
+        'image_url': st.column_config.ImageColumn(
+            'Image',
+            width='small',
+            help="Product image"
+        ),
+        'name': st.column_config.TextColumn(
+            'Product Name',
+            width='large',
+            help="Product name"
+        ),
+        'marketplace': st.column_config.TextColumn(
+            'Marketplace',
+            width='small'
+        ),
+        'price': st.column_config.NumberColumn(
+            'Price',
+            width='small',
+            format="$%d",
+            help="Price in CLP (sorted numerically)"
+        ),
+        'in_stock': st.column_config.CheckboxColumn(
+            'In Stock',
+            width='small'
+        ),
+        'product_url': st.column_config.LinkColumn(
+            'Link',
+            width='small',
+            display_text="View"
+        ),
+        'scraped_at': st.column_config.DatetimeColumn(
+            'Last Updated',
+            width='medium',
+            format="DD/MM/YY HH:mm"
+        )
     }
     
+    # Replace price string with numeric for display
+    if 'price' in display_df.columns and 'price_numeric' in display_df.columns:
+        display_df['price'] = display_df['price_numeric']
+    
+    # Remove price_numeric from display
+    final_display_cols = [col for col in display_columns if col != 'price_numeric']
+    
     st.dataframe(
-        display_df,
+        display_df[final_display_cols],
         use_container_width=True,
         hide_index=True,
         column_config=column_config
